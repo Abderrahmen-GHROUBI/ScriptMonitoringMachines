@@ -1,0 +1,13 @@
+{
+    "database": {
+        "username": "MSI",
+        "password": "x0we80/gh",
+        "server": "DESKTOP-6D9B7GC\\SQLEXPRESS",
+        "database": "MachineCNC",
+        "driver": "ODBC Driver 17 for SQL Server"
+    },
+    "logger": {
+        "log_file": "./CNCMACHINEMONITORING.log",
+        "level": "INFO"
+    }
+}
