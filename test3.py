@@ -88,7 +88,7 @@ while True:
                 
                 if inAutomaticOperationRun == 1 and state['inAutomaticOperationRunPreviousState'] == 0 :       
                     if state['previous_program'] != current_program:
-                        
+                      if state['end_program_inserted']:
                         program_id = insert_program_starttime(ip, port, current_program)
                         state['previous_program'] = current_program
                         state['start_program_inserted'] = True
@@ -98,35 +98,33 @@ while True:
                     state['inAutomaticOperationRunPreviousState'] = 1
                     set_machine_in_automatic_operation_mode_run(ip, port, True)                
                 elif inAutomaticOperationRun == 0 and state['inAutomaticOperationRunPreviousState'] == 1  :
-    
-                    set_machine_in_automatic_operation_mode_run(ip, port, False)
                     if state['start_program_inserted'] and not state['start_operation_inserted']:
+                        set_machine_in_automatic_operation_mode_run(ip, port, False)
+                    
                         set_program_endtime(program_id=program_id)
                         set_program_MillingTime(program_id,state['previous_totalAutomaticOperationTimeFromStartToFeedHoldOrBlockStopOrReset'])
                         set_program_executionTime(program_id,state['previous_timeControlledByTheProgrammableControllerFull'])
-                        state['end_program_inserted'] = False
-                        program_id=0
-                           
-                    state['inAutomaticOperationRunPreviousState'] = 0
+                        state['end_program_inserted'] = True
+                        
+                        state['inAutomaticOperationRunPreviousState'] = 0
                     
                 if automaticOperationStart == 1 and state['previousautomaticOperationStart'] == 0 :
-                    set_machine_automatic_operation_start(ip, port, True)
+                    
 
                     if state['start_program_inserted']:
-                        current_operation = current_program_full[10:]
+                        
                         if state['previous_operation'] != current_operation:
                             operation_id = insert_operation_starttime(program_id, current_operation)
                             state['previous_operation'] = current_operation
                             state['start_operation_inserted'] = True
-                    state['previousautomaticOperationStart'] = 1
-                    
+                        state['previousautomaticOperationStart'] = 1
+                        set_machine_automatic_operation_start(ip, port, True)
                     
                 elif automaticOperationStart == 0 and state['previousautomaticOperationStart'] == 1  :
                     if state['start_program_inserted'] and state['start_operation_inserted']:
                         set_operation_endtime(operation_id)
                         state['end_operation_inserted'] = True
-                        operation_id=0
-                    set_machine_automatic_operation_start(ip, port, False)
+                        set_machine_automatic_operation_start(ip, port, False)
                     
                     
                     
@@ -155,7 +153,7 @@ while True:
 
                 if(automaticOperationStart==1):
                     CommandStatus = machine_connection.GetCommandStatus()
-                    if state['previous_CommandStatus']!= CommandStatus and CommandStatus!=None :
+                    if state['previous_CommandStatus']!= CommandStatus  :
                         if CommandStatusid !=None:
                            set_endtime_CommandStatus(CommandStatusId=CommandStatusid)
                         CommandStatusid = insert_CommandStatus(operationId=operation_id, Commandsts=CommandStatus)             
@@ -208,14 +206,14 @@ while True:
                         state['previous_tool'] = current_tool
 
                        
-                current_alarm = machine_connection.get_alarm()
+                    current_alarm = machine_connection.get_alarm()
                
                 
-                if current_alarm != ['previous_Alarm']  and current_alarm != None:
-
-                    if "EMG" in current_alarm:
-                        set_machine_Emmergency(ip, port, True)
-                    else:
+                    if current_alarm != ['previous_Alarm']  and current_alarm != None:
+                      insert_alarm(current_alarm)
+                      if "EMG" in current_alarm:
+                          set_machine_Emmergency(ip, port, True)
+                      else:
                         set_machine_Emmergency(ip, port, False)
                     
                     
